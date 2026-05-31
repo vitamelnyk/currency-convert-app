@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,6 +43,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   @override
   void initState() {
     super.initState();
+    loadData();
     fetchRates();
   }
 
@@ -58,12 +60,40 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
           rates = data['rates'];
           isLoading = false;
         });
+
+        await loadData();
       }
     } catch (e) {
       setState(() {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString('amount', amountController.text);
+
+    await prefs.setDouble('result', result);
+
+    await prefs.setString('fromCurrency', fromCurrency);
+
+    await prefs.setString('toCurrency', toCurrency);
+  }
+
+  Future<void> loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      amountController.text = prefs.getString('amount') ?? '';
+
+      result = prefs.getDouble('result') ?? 0.0;
+
+      fromCurrency = prefs.getString('fromCurrency') ?? 'USD';
+
+      toCurrency = prefs.getString('toCurrency') ?? 'EUR';
+    });
   }
 
   void convertCurrency() {
@@ -80,6 +110,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     setState(() {
       result = convertedAmount;
     });
+    saveData();
   }
 
   @override
@@ -97,6 +128,9 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                   TextField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      saveData();
+                    },
                     decoration: const InputDecoration(
                       labelText: 'Сума',
                       border: OutlineInputBorder(),
@@ -117,6 +151,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                       setState(() {
                         fromCurrency = value!;
                       });
+                      saveData();
                     },
                   ),
 
@@ -135,6 +170,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                       setState(() {
                         toCurrency = value!;
                       });
+                      saveData();
                     },
                   ),
 

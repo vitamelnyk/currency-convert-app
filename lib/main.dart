@@ -113,92 +113,255 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     saveData();
   }
 
+  void swapCurrencies() {
+    setState(() {
+      final temp = fromCurrency;
+      fromCurrency = toCurrency;
+      toCurrency = temp;
+    });
+
+    convertCurrency();
+    saveData();
+  }
+
   @override
   Widget build(BuildContext context) {
     List<String> currencies = rates.keys.toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Конвертер валют'), centerTitle: true),
+      backgroundColor: const Color(0xffF7F8FA),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      saveData();
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Сума',
-                      border: OutlineInputBorder(),
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+
+                    const Text(
+                      "Конвертер валют",
+                      style: TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
 
-                  DropdownButton<String>(
-                    value: fromCurrency,
-                    isExpanded: true,
-                    items: currencies.map((currency) {
-                      return DropdownMenuItem(
-                        value: currency,
-                        child: Text(currency),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        fromCurrency = value!;
-                      });
-                      saveData();
-                    },
-                  ),
+                    const SizedBox(height: 30),
 
-                  const SizedBox(height: 10),
-
-                  DropdownButton<String>(
-                    value: toCurrency,
-                    isExpanded: true,
-                    items: currencies.map((currency) {
-                      return DropdownMenuItem(
-                        value: currency,
-                        child: Text(currency),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        toCurrency = value!;
-                      });
-                      saveData();
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  ElevatedButton(
-                    onPressed: convertCurrency,
-                    child: const Text('Конвертувати'),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  Text(
-                    'Результат:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    result.toStringAsFixed(2),
-                    style: const TextStyle(
-                      fontSize: 32,
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
+                    Text(
+                      "1 $fromCurrency = ${(rates[toCurrency] / rates[fromCurrency]).toStringAsFixed(4)} $toCurrency",
+                      style: const TextStyle(color: Colors.green, fontSize: 18),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 30),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Сума",
+                        style: TextStyle(
+                          color: Colors.grey.shade800,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(blurRadius: 10, color: Colors.black12),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: amountController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              onChanged: (_) {
+                                saveData();
+                                convertCurrency();
+                              },
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                              ),
+                              style: const TextStyle(
+                                fontSize: 40,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+
+                          DropdownButton<String>(
+                            underline: const SizedBox(),
+                            value: fromCurrency,
+                            items: currencies.map((e) {
+                              return DropdownMenuItem(value: e, child: Text(e));
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                fromCurrency = value!;
+                              });
+
+                              convertCurrency();
+                              saveData();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    GestureDetector(
+                      onTap: swapCurrencies,
+                      child: Container(
+                        width: 65,
+                        height: 65,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xffA6E37B),
+                        ),
+                        child: const Icon(Icons.swap_vert, size: 34),
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Конвертовано в",
+                        style: TextStyle(
+                          color: Colors.grey.shade800,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 25,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(blurRadius: 10, color: Colors.black12),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              result.toStringAsFixed(2),
+                              style: const TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          DropdownButton<String>(
+                            underline: const SizedBox(),
+                            value: toCurrency,
+                            items: currencies.map((e) {
+                              return DropdownMenuItem(value: e, child: Text(e));
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                toCurrency = value!;
+                              });
+
+                              convertCurrency();
+                              saveData();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.access_time, color: Colors.grey.shade600),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Дані оновлено",
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 60,
+                      child: ElevatedButton.icon(
+                        onPressed: fetchRates,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text(
+                          "Оновити курс",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(blurRadius: 10, color: Colors.black12),
+                        ],
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Історія",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          Text("Історія конвертацій буде тут"),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
     );

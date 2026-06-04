@@ -32,6 +32,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   final TextEditingController amountController = TextEditingController();
 
   Map<String, dynamic> rates = {};
+  List<String> history = [];
 
   String fromCurrency = 'USD';
   String toCurrency = 'EUR';
@@ -74,12 +75,10 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.setString('amount', amountController.text);
-
     await prefs.setDouble('result', result);
-
     await prefs.setString('fromCurrency', fromCurrency);
-
     await prefs.setString('toCurrency', toCurrency);
+    await prefs.setStringList('history', history);
   }
 
   Future<void> loadData() async {
@@ -87,13 +86,27 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
     setState(() {
       amountController.text = prefs.getString('amount') ?? '';
-
       result = prefs.getDouble('result') ?? 0.0;
-
       fromCurrency = prefs.getString('fromCurrency') ?? 'USD';
-
       toCurrency = prefs.getString('toCurrency') ?? 'EUR';
+      history = prefs.getStringList('history') ?? [];
     });
+  }
+
+  Future<void> addToHistory(double amount, double convertedAmount) async {
+    final record =
+        '${amount.toStringAsFixed(2)} $fromCurrency → '
+        '${convertedAmount.toStringAsFixed(2)} $toCurrency';
+
+    setState(() {
+      history.insert(0, record);
+
+      if (history.length > 20) {
+        history.removeLast();
+      }
+    });
+
+    await saveData();
   }
 
   void convertCurrency() {
@@ -110,6 +123,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     setState(() {
       result = convertedAmount;
     });
+    addToHistory(amount, convertedAmount);
     saveData();
   }
 
@@ -345,7 +359,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                           BoxShadow(blurRadius: 10, color: Colors.black12),
                         ],
                       ),
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -356,7 +370,19 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                             ),
                           ),
                           SizedBox(height: 15),
-                          Text("Історія конвертацій буде тут"),
+                          history.isEmpty
+                              ? const Text("Історія порожня")
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: history.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      leading: const Icon(Icons.history),
+                                      title: Text(history[index]),
+                                    );
+                                  },
+                                ),
                         ],
                       ),
                     ),

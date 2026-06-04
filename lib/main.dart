@@ -138,6 +138,16 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     saveData();
   }
 
+  Future<void> clearHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      history.clear();
+    });
+
+    await prefs.remove('history');
+  }
+
   @override
   Widget build(BuildContext context) {
     List<String> currencies = rates.keys.toList();
@@ -362,14 +372,29 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Історія",
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Історія",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              TextButton.icon(
+                                onPressed: clearHistory,
+                                icon: const Icon(Icons.delete),
+                                label: const Text('Очистити'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 15),
+
+                          const SizedBox(height: 15),
+
                           history.isEmpty
                               ? const Text("Історія порожня")
                               : ListView.builder(

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +29,15 @@ class CurrencyConverterPage extends StatefulWidget {
   State<CurrencyConverterPage> createState() => _CurrencyConverterPageState();
 }
 
+class RatePoint {
+  final DateTime date;
+  final double value;
+
+  RatePoint(this.date, this.value);
+}
+
+enum Period { d7, d30, d90 }
+
 class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   final TextEditingController amountController = TextEditingController();
 
@@ -38,14 +48,17 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   String toCurrency = 'EUR';
 
   double result = 0.0;
-
   bool isLoading = true;
+
+  List<RatePoint> points = [];
+  Period selectedPeriod = Period.d30;
 
   @override
   void initState() {
     super.initState();
     loadData();
     fetchRates();
+    fetchHistory();
   }
 
   Future<void> fetchRates() async {
@@ -68,6 +81,73 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> fetchHistory() async {
+    if (fromCurrency == toCurrency) {
+      setState(() {
+        points = [RatePoint(DateTime.now(), 1.0)];
+      });
+      return;
+    }
+    try {
+      int days;
+
+      switch (selectedPeriod) {
+        case Period.d7:
+          days = 7;
+          break;
+        case Period.d30:
+          days = 30;
+          break;
+        case Period.d90:
+          days = 90;
+          break;
+      }
+
+      final endDate = DateTime.now();
+      final startDate = endDate.subtract(Duration(days: days));
+
+      final start =
+          "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}";
+
+      final end =
+          "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}";
+
+      final url =
+          "https://api.frankfurter.app/$start..$end?from=$fromCurrency&to=$toCurrency";
+
+      debugPrint("URL: $url");
+
+      final response = await http.get(Uri.parse(url));
+      debugPrint(response.body);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        final Map<String, dynamic> ratesData = data["rates"];
+
+        List<RatePoint> loadedPoints = [];
+
+        ratesData.forEach((date, value) {
+          final rate = value[toCurrency];
+
+          if (rate is num) {
+            loadedPoints.add(RatePoint(DateTime.parse(date), rate.toDouble()));
+          }
+        });
+
+        loadedPoints.sort((a, b) => a.date.compareTo(b.date));
+
+        debugPrint("Завантажено точок: ${loadedPoints.length}");
+
+        setState(() {
+          points = loadedPoints;
+        });
+      }
+    } catch (e) {
+      debugPrint("Помилка завантаження графіка: $e");
     }
   }
 
@@ -146,6 +226,55 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     });
 
     await prefs.remove('history');
+  }
+
+  double get minRate {
+    if (points.isEmpty) return 0;
+    return points.map((e) => e.value).reduce((a, b) => a < b ? a : b);
+  }
+
+  double get maxRate {
+    if (points.isEmpty) return 0;
+    return points.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+  }
+
+  double get changePercent {
+    if (points.length < 2) return 0;
+
+    return ((points.last.value - points.first.value) / points.first.value) *
+        100;
+  }
+
+  List<FlSpot> get chartSpots {
+    return points.asMap().entries.map((entry) {
+      return FlSpot(entry.key.toDouble(), entry.value.value);
+    }).toList();
+  }
+
+  Widget periodButton(String text, Period period) {
+    bool selected = selectedPeriod == period;
+
+    return GestureDetector(
+      onTap: () async {
+        setState(() {
+          selectedPeriod = period;
+        });
+
+        await fetchHistory();
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? Colors.green.shade800 : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(color: selected ? Colors.white : Colors.black),
+        ),
+      ),
+    );
   }
 
   @override
@@ -359,6 +488,74 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                     ),
 
                     const SizedBox(height: 30),
+
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "1 $fromCurrency = "
+                            "${(rates[toCurrency] / rates[fromCurrency]).toStringAsFixed(4)} "
+                            "$toCurrency",
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          Text(
+                            "${changePercent.toStringAsFixed(2)}%",
+                            style: TextStyle(
+                              color: changePercent >= 0
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              periodButton("7 днів", Period.d7),
+                              periodButton("30 днів", Period.d30),
+                              periodButton("90 днів", Period.d90),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          SizedBox(
+                            height: 250,
+                            child: points.isEmpty
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : LineChart(
+                                    LineChartData(
+                                      minY: minRate,
+                                      maxY: maxRate,
+                                      lineBarsData: [
+                                        LineChartBarData(
+                                          spots: chartSpots,
+                                          isCurved: true,
+                                          color: Colors.green,
+                                          dotData: FlDotData(show: false),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                     Container(
                       padding: const EdgeInsets.all(20),

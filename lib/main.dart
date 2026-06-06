@@ -215,6 +215,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     });
 
     convertCurrency();
+    fetchHistory();
     saveData();
   }
 
@@ -370,6 +371,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                               });
 
                               convertCurrency();
+                              fetchHistory();
                               saveData();
                             },
                           ),
@@ -442,8 +444,8 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                               setState(() {
                                 toCurrency = value!;
                               });
-
                               convertCurrency();
+                              fetchHistory();
                               saveData();
                             },
                           ),

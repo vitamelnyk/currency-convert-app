@@ -76,6 +76,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
         });
 
         await loadData();
+        await fetchHistory();
       }
     } catch (e) {
       setState(() {
@@ -125,6 +126,13 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
+        if (data["rates"] == null) {
+          setState(() {
+            points = [];
+          });
+          return;
+        }
 
         final Map<String, dynamic> ratesData = data["rates"];
 
@@ -194,8 +202,12 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
     double amount = double.tryParse(amountController.text) ?? 0;
 
-    double fromRate = rates[fromCurrency].toDouble();
-    double toRate = rates[toCurrency].toDouble();
+    if (!rates.containsKey(fromCurrency) || !rates.containsKey(toCurrency)) {
+      return;
+    }
+
+    double fromRate = (rates[fromCurrency] as num).toDouble();
+    double toRate = (rates[toCurrency] as num).toDouble();
 
     double usdAmount = amount / fromRate;
     double convertedAmount = usdAmount * toRate;

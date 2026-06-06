@@ -295,334 +295,356 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     List<String> currencies = rates.keys.toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xffF7F8FA),
+      backgroundColor: const Color(0xffEDEFF3),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
 
-                    const Text(
-                      "Конвертер валют",
-                      style: TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    Text(
-                      "1 $fromCurrency = ${(rates[toCurrency] / rates[fromCurrency]).toStringAsFixed(4)} $toCurrency",
-                      style: const TextStyle(color: Colors.green, fontSize: 18),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Сума",
-                        style: TextStyle(
-                          color: Colors.grey.shade800,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: const [
-                          BoxShadow(blurRadius: 10, color: Colors.black12),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: amountController,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              onChanged: (_) {
-                                saveData();
-                                convertCurrency();
-                              },
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                              ),
-                              style: const TextStyle(
-                                fontSize: 40,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-
-                          DropdownButton<String>(
-                            underline: const SizedBox(),
-                            value: fromCurrency,
-                            items: currencies.map((e) {
-                              return DropdownMenuItem(value: e, child: Text(e));
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                fromCurrency = value!;
-                              });
-
-                              convertCurrency();
-                              fetchHistory();
-                              saveData();
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    GestureDetector(
-                      onTap: swapCurrencies,
-                      child: Container(
-                        width: 65,
-                        height: 65,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xffA6E37B),
-                        ),
-                        child: const Icon(Icons.swap_vert, size: 34),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Конвертовано в",
-                        style: TextStyle(
-                          color: Colors.grey.shade800,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 25,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: const [
-                          BoxShadow(blurRadius: 10, color: Colors.black12),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              result.toStringAsFixed(2),
-                              style: const TextStyle(
-                                fontSize: 42,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-
-                          DropdownButton<String>(
-                            underline: const SizedBox(),
-                            value: toCurrency,
-                            items: currencies.map((e) {
-                              return DropdownMenuItem(value: e, child: Text(e));
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                toCurrency = value!;
-                              });
-                              convertCurrency();
-                              fetchHistory();
-                              saveData();
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
                       children: [
-                        Icon(Icons.access_time, color: Colors.grey.shade600),
-                        const SizedBox(width: 8),
+                        const SizedBox(height: 20),
+
+                        const Text(
+                          "Конвертер валют",
+                          style: TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
                         Text(
-                          "Дані оновлено",
-                          style: TextStyle(color: Colors.grey.shade600),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 60,
-                      child: ElevatedButton.icon(
-                        onPressed: fetchRates,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text(
-                          "Оновити курс",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                          "1 $fromCurrency = ${(rates[toCurrency] / rates[fromCurrency]).toStringAsFixed(4)} $toCurrency",
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontSize: 18,
                           ),
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 30),
+                        const SizedBox(height: 30),
 
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "1 $fromCurrency = "
-                            "${(rates[toCurrency] / rates[fromCurrency]).toStringAsFixed(4)} "
-                            "$toCurrency",
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 10),
-
-                          Text(
-                            "${changePercent.toStringAsFixed(2)}%",
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Сума",
                             style: TextStyle(
-                              color: changePercent >= 0
-                                  ? Colors.green
-                                  : Colors.red,
+                              color: Colors.grey.shade800,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
+                        ),
 
-                          const SizedBox(height: 20),
+                        const SizedBox(height: 10),
 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              periodButton("7 днів", Period.d7),
-                              periodButton("30 днів", Period.d30),
-                              periodButton("90 днів", Period.d90),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: const [
+                              BoxShadow(blurRadius: 10, color: Colors.black12),
                             ],
                           ),
-
-                          const SizedBox(height: 20),
-
-                          SizedBox(
-                            height: 250,
-                            child: points.isEmpty
-                                ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : LineChart(
-                                    LineChartData(
-                                      minY: minRate,
-                                      maxY: maxRate,
-                                      lineBarsData: [
-                                        LineChartBarData(
-                                          spots: chartSpots,
-                                          isCurved: true,
-                                          color: Colors.green,
-                                          dotData: FlDotData(show: false),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: const [
-                          BoxShadow(blurRadius: 10, color: Colors.black12),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Row(
                             children: [
-                              const Text(
-                                "Історія",
-                                style: TextStyle(
+                              Expanded(
+                                child: TextField(
+                                  controller: amountController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
+                                  onChanged: (_) {
+                                    saveData();
+                                    convertCurrency();
+                                  },
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+
+                              DropdownButton<String>(
+                                underline: const SizedBox(),
+                                value: fromCurrency,
+                                items: currencies.map((e) {
+                                  return DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    fromCurrency = value!;
+                                  });
+
+                                  convertCurrency();
+                                  fetchHistory();
+                                  saveData();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        GestureDetector(
+                          onTap: swapCurrencies,
+                          child: Container(
+                            width: 65,
+                            height: 65,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xffA6E37B),
+                            ),
+                            child: const Icon(Icons.swap_vert, size: 34),
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Конвертовано в",
+                            style: TextStyle(
+                              color: Colors.grey.shade800,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 25,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: const [
+                              BoxShadow(blurRadius: 10, color: Colors.black12),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  result.toStringAsFixed(2),
+                                  style: const TextStyle(
+                                    fontSize: 42,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+
+                              DropdownButton<String>(
+                                underline: const SizedBox(),
+                                value: toCurrency,
+                                items: currencies.map((e) {
+                                  return DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    toCurrency = value!;
+                                  });
+                                  convertCurrency();
+                                  fetchHistory();
+                                  saveData();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Дані оновлено",
+                              style: TextStyle(color: Colors.grey.shade600),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 60,
+                          child: ElevatedButton.icon(
+                            onPressed: fetchRates,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text(
+                              "Оновити курс",
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "1 $fromCurrency = "
+                                "${(rates[toCurrency] / rates[fromCurrency]).toStringAsFixed(4)} "
+                                "$toCurrency",
+                                style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              TextButton.icon(
-                                onPressed: clearHistory,
-                                icon: const Icon(Icons.delete),
-                                label: const Text('Очистити'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.black,
+
+                              const SizedBox(height: 10),
+
+                              Text(
+                                "${changePercent.toStringAsFixed(2)}%",
+                                style: TextStyle(
+                                  color: changePercent >= 0
+                                      ? Colors.green
+                                      : Colors.red,
                                 ),
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  periodButton("7 днів", Period.d7),
+                                  periodButton("30 днів", Period.d30),
+                                  periodButton("90 днів", Period.d90),
+                                ],
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              SizedBox(
+                                height: 250,
+                                child: points.isEmpty
+                                    ? const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : LineChart(
+                                        LineChartData(
+                                          minY: minRate,
+                                          maxY: maxRate,
+                                          lineBarsData: [
+                                            LineChartBarData(
+                                              spots: chartSpots,
+                                              isCurved: true,
+                                              color: Colors.green,
+                                              dotData: FlDotData(show: false),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                               ),
                             ],
                           ),
+                        ),
 
-                          const SizedBox(height: 15),
+                        const SizedBox(height: 30),
 
-                          history.isEmpty
-                              ? const Text("Історія порожня")
-                              : ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: history.length,
-                                  itemBuilder: (context, index) {
-                                    return ListTile(
-                                      leading: const Icon(Icons.history),
-                                      title: Text(history[index]),
-                                    );
-                                  },
-                                ),
-                        ],
-                      ),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: const [
+                              BoxShadow(blurRadius: 10, color: Colors.black12),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    "Історія",
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: clearHistory,
+                                    icon: const Icon(Icons.delete),
+                                    label: const Text('Очистити'),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 15),
+
+                              history.isEmpty
+                                  ? const Text("Історія порожня")
+                                  : ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: history.length,
+                                      itemBuilder: (context, index) {
+                                        return ListTile(
+                                          leading: const Icon(Icons.history),
+                                          title: Text(history[index]),
+                                        );
+                                      },
+                                    ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

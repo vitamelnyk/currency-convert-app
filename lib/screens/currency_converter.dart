@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/rate_point.dart';
 import '../enums/period.dart';
+import '../services/storage_services.dart';
 
 class CurrencyConverterPage extends StatefulWidget {
   const CurrencyConverterPage({super.key});
@@ -15,6 +16,7 @@ class CurrencyConverterPage extends StatefulWidget {
 
 class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   final TextEditingController amountController = TextEditingController();
+  final StorageService storageService = StorageService();
 
   Map<String, dynamic> rates = {};
   List<String> history = [];
@@ -36,8 +38,8 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
   Future<void> initialize() async {
     await loadData();
-    await fetchRates(); 
-    await fetchHistory(); 
+    await fetchRates();
+    await fetchHistory();
   }
 
   Future<void> fetchRates() async {
@@ -138,25 +140,15 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     }
   }
 
-  Future<void> saveData() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString('amount', amountController.text);
-    await prefs.setDouble('result', result);
-    await prefs.setString('fromCurrency', fromCurrency);
-    await prefs.setString('toCurrency', toCurrency);
-    await prefs.setStringList('history', history);
-  }
-
   Future<void> loadData() async {
-    final prefs = await SharedPreferences.getInstance();
+    final data = await storageService.loadData();
 
     setState(() {
-      amountController.text = prefs.getString('amount') ?? '';
-      result = prefs.getDouble('result') ?? 0.0;
-      fromCurrency = prefs.getString('fromCurrency') ?? 'USD';
-      toCurrency = prefs.getString('toCurrency') ?? 'EUR';
-      history = prefs.getStringList('history') ?? [];
+      amountController.text = data['amount'];
+      result = data['result'];
+      fromCurrency = data['fromCurrency'];
+      toCurrency = data['toCurrency'];
+      history = List<String>.from(data['history']);
     });
   }
 
@@ -173,7 +165,13 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
       }
     });
 
-    await saveData();
+    await storageService.saveData(
+      amount: amountController.text,
+      result: result,
+      fromCurrency: fromCurrency,
+      toCurrency: toCurrency,
+      history: history,
+    );
   }
 
   void convertCurrency() {
@@ -195,7 +193,13 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
       result = convertedAmount;
     });
     addToHistory(amount, convertedAmount);
-    saveData();
+    storageService.saveData(
+      amount: amountController.text,
+      result: result,
+      fromCurrency: fromCurrency,
+      toCurrency: toCurrency,
+      history: history,
+    );
   }
 
   void swapCurrencies() {
@@ -207,17 +211,22 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
     convertCurrency();
     fetchHistory();
-    saveData();
+
+    storageService.saveData(
+      amount: amountController.text,
+      result: result,
+      fromCurrency: fromCurrency,
+      toCurrency: toCurrency,
+      history: history,
+    );
   }
 
   Future<void> clearHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-
     setState(() {
       history.clear();
     });
 
-    await prefs.remove('history');
+    await storageService.clearHistory();
   }
 
   double get minRate {
@@ -344,7 +353,13 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                                         decimal: true,
                                       ),
                                   onChanged: (_) {
-                                    saveData();
+                                    storageService.saveData(
+                                      amount: amountController.text,
+                                      result: result,
+                                      fromCurrency: fromCurrency,
+                                      toCurrency: toCurrency,
+                                      history: history,
+                                    );
                                     convertCurrency();
                                   },
                                   decoration: const InputDecoration(
@@ -373,7 +388,13 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
                                   convertCurrency();
                                   fetchHistory();
-                                  saveData();
+                                  storageService.saveData(
+                                    amount: amountController.text,
+                                    result: result,
+                                    fromCurrency: fromCurrency,
+                                    toCurrency: toCurrency,
+                                    history: history,
+                                  );
                                 },
                               ),
                             ],
@@ -450,7 +471,13 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                                   });
                                   convertCurrency();
                                   fetchHistory();
-                                  saveData();
+                                  storageService.saveData(
+                                    amount: amountController.text,
+                                    result: result,
+                                    fromCurrency: fromCurrency,
+                                    toCurrency: toCurrency,
+                                    history: history,
+                                  );
                                 },
                               ),
                             ],

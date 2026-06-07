@@ -121,7 +121,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
           "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}";
 
       final url =
-          "https://api.frankfurter.app/$start..$end?from=$fromCurrency&to=$toCurrency";
+          "http://currency-proxy-production.up.railway.app/history?start=$start&end=$end&from=$fromCurrency&to=$toCurrency";
 
       debugPrint("URL: $url");
 

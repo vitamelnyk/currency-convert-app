@@ -6,6 +6,7 @@ import '../models/rate_point.dart';
 import '../enums/period.dart';
 import '../services/storage_services.dart';
 import '../services/history_services.dart';
+import '../services/currency_service.dart';
 
 class CurrencyConverterPage extends StatefulWidget {
   const CurrencyConverterPage({super.key});
@@ -17,6 +18,7 @@ class CurrencyConverterPage extends StatefulWidget {
 class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   final TextEditingController amountController = TextEditingController();
   final StorageService storageService = StorageService();
+  final RatesService _service = RatesService();
 
   Map<String, dynamic> rates = {};
   List<String> history = [];
@@ -44,25 +46,24 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
   Future<void> fetchRates() async {
     try {
-      final response = await http.get(
-        Uri.parse('https://open.er-api.com/v6/latest/USD'),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
+      final data = await _service.fetchRates();
+      if (data == null) {
         setState(() {
-          rates = data['rates'];
           isLoading = false;
         });
-
-        await loadData();
-        await fetchHistory();
+        return;
       }
+      setState(() {
+        rates = data['rates'];
+        isLoading = false;
+      });
+      await loadData();
+      await fetchHistory();
     } catch (e) {
       setState(() {
         isLoading = false;
       });
+      debugPrint("fetchRates error: $e");
     }
   }
 

@@ -1,0 +1,1 @@
+enum Period { d7, d30, d90 }

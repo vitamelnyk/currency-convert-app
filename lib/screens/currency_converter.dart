@@ -1,12 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:fl_chart/fl_chart.dart';
 import '../models/rate_point.dart';
 import '../enums/period.dart';
 import '../services/storage_services.dart';
 import '../services/history_services.dart';
 import '../services/currency_service.dart';
+import '../services/currency_logic.dart';
 
 class CurrencyConverterPage extends StatefulWidget {
   const CurrencyConverterPage({super.key});
@@ -22,13 +21,10 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
   Map<String, dynamic> rates = {};
   List<String> history = [];
-
   String fromCurrency = 'USD';
   String toCurrency = 'EUR';
-
   double result = 0.0;
   bool isLoading = true;
-
   List<RatePoint> points = [];
   Period selectedPeriod = Period.d30;
 
@@ -92,9 +88,12 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   }
 
   Future<void> addToHistory(double amount, double convertedAmount) async {
-    final record =
-        '${amount.toStringAsFixed(2)} $fromCurrency → '
-        '${convertedAmount.toStringAsFixed(2)} $toCurrency';
+    final record = CurrencyLogic.buildHistory(
+      amount: amount,
+      from: fromCurrency,
+      result: convertedAmount,
+      to: toCurrency,
+    );
 
     setState(() {
       history.insert(0, record);
@@ -115,18 +114,13 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
 
   void convertCurrency() {
     if (amountController.text.isEmpty) return;
-
     double amount = double.tryParse(amountController.text) ?? 0;
-
-    if (!rates.containsKey(fromCurrency) || !rates.containsKey(toCurrency)) {
-      return;
-    }
-
-    double fromRate = (rates[fromCurrency] as num).toDouble();
-    double toRate = (rates[toCurrency] as num).toDouble();
-
-    double usdAmount = amount / fromRate;
-    double convertedAmount = usdAmount * toRate;
+    final convertedAmount = CurrencyLogic.convert(
+      amount: amount,
+      rates: rates,
+      from: fromCurrency,
+      to: toCurrency,
+    );
 
     setState(() {
       result = convertedAmount;
@@ -168,22 +162,12 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     await storageService.clearHistory();
   }
 
-  double get minRate {
-    if (points.isEmpty) return 0;
-    return points.map((e) => e.value).reduce((a, b) => a < b ? a : b);
-  }
-
-  double get maxRate {
-    if (points.isEmpty) return 0;
-    return points.map((e) => e.value).reduce((a, b) => a > b ? a : b);
-  }
-
-  double get changePercent {
-    if (points.length < 2) return 0;
-
-    return ((points.last.value - points.first.value) / points.first.value) *
-        100;
-  }
+  double get minRate => 
+      CurrencyLogic.minValue(points.map((e) => e.value).toList());
+  double get maxRate =>
+      CurrencyLogic.maxValue(points.map((e) => e.value).toList());
+  double get changePercent =>
+      CurrencyLogic.percentChange(points.map((e) => e.value).toList());
 
   List<FlSpot> get chartSpots {
     return points.asMap().entries.map((entry) {

@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/rate_point.dart';
 import '../enums/period.dart';
 import '../services/storage_services.dart';
+import '../services/history_services.dart';
 
 class CurrencyConverterPage extends StatefulWidget {
   const CurrencyConverterPage({super.key});
@@ -67,77 +67,15 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   }
 
   Future<void> fetchHistory() async {
-    if (fromCurrency == toCurrency) {
-      setState(() {
-        points = [RatePoint(DateTime.now(), 1.0)];
-      });
-      return;
-    }
-    try {
-      int days;
+    final result = await fetchHistoryData(
+      fromCurrency: fromCurrency,
+      toCurrency: toCurrency,
+      selectedPeriod: selectedPeriod,
+    );
 
-      switch (selectedPeriod) {
-        case Period.d7:
-          days = 7;
-          break;
-        case Period.d30:
-          days = 30;
-          break;
-        case Period.d90:
-          days = 90;
-          break;
-      }
-
-      final endDate = DateTime.now();
-      final startDate = endDate.subtract(Duration(days: days));
-
-      final start =
-          "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}";
-
-      final end =
-          "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}";
-
-      final url =
-          "http://currency-proxy-production.up.railway.app/history?start=$start&end=$end&from=$fromCurrency&to=$toCurrency";
-
-      debugPrint("URL: $url");
-
-      final response = await http.get(Uri.parse(url));
-      debugPrint(response.body);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        if (data["rates"] == null) {
-          setState(() {
-            points = [];
-          });
-          return;
-        }
-
-        final Map<String, dynamic> ratesData = data["rates"];
-
-        List<RatePoint> loadedPoints = [];
-
-        ratesData.forEach((date, value) {
-          final rate = value[toCurrency];
-
-          if (rate is num) {
-            loadedPoints.add(RatePoint(DateTime.parse(date), rate.toDouble()));
-          }
-        });
-
-        loadedPoints.sort((a, b) => a.date.compareTo(b.date));
-
-        debugPrint("Завантажено точок: ${loadedPoints.length}");
-
-        setState(() {
-          points = loadedPoints;
-        });
-      }
-    } catch (e) {
-      debugPrint("Помилка завантаження графіка: $e");
-    }
+    setState(() {
+      points = result;
+    });
   }
 
   Future<void> loadData() async {

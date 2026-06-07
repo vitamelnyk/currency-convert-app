@@ -56,9 +56,13 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
   @override
   void initState() {
     super.initState();
-    loadData();
-    fetchRates();
-    fetchHistory();
+    initialize();
+  }
+
+  Future<void> initialize() async {
+    await loadData();
+    await fetchRates(); 
+    await fetchHistory(); 
   }
 
   Future<void> fetchRates() async {

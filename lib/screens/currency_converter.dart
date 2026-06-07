@@ -210,12 +210,11 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
                     child: Column(
                       children: [
                         const SizedBox(height: 20),

@@ -206,7 +206,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
     List<String> currencies = rates.keys.toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xffEDEFF3),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
@@ -244,7 +244,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                           child: Text(
                             "Сума",
                             style: TextStyle(
-                              color: Colors.grey.shade800,
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
                             ),
@@ -259,7 +259,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: const [
                               BoxShadow(blurRadius: 10, color: Colors.black12),
@@ -345,7 +345,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                           child: Text(
                             "Конвертовано в",
                             style: TextStyle(
-                              color: Colors.grey.shade800,
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
                             ),
@@ -360,7 +360,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                             vertical: 25,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: const [
                               BoxShadow(blurRadius: 10, color: Colors.black12),
@@ -413,12 +413,12 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                           children: [
                             Icon(
                               Icons.access_time,
-                              color: Colors.grey.shade600,
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               "Дані оновлено",
-                              style: TextStyle(color: Colors.grey.shade600),
+                              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                             ),
                           ],
                         ),
@@ -450,7 +450,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: Column(
@@ -520,7 +520,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: const [
                               BoxShadow(blurRadius: 10, color: Colors.black12),
@@ -545,7 +545,7 @@ class _CurrencyConverterPageState extends State<CurrencyConverterPage> {
                                     icon: const Icon(Icons.delete),
                                     label: const Text('Очистити'),
                                     style: TextButton.styleFrom(
-                                      foregroundColor: Colors.black,
+                                      foregroundColor: Theme.of(context).textTheme.bodyLarge?.color,
                                     ),
                                   ),
                                 ],

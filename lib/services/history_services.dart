@@ -34,7 +34,7 @@ Future<List<RatePoint>> fetchHistoryData({
         "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}";
 
     final url =
-        "http://currency-proxy-production.up.railway.app/history?start=$start&end=$end&from=$fromCurrency&to=$toCurrency";
+        "https://currency-proxy-production.up.railway.app/history?start=$start&end=$end&from=$fromCurrency&to=$toCurrency";
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode != 200) {
